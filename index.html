@@ -1300,6 +1300,24 @@ if ('serviceWorker' in navigator) {
 
 let deferredPrompt = null;
 
+// Se já está instalado (rodando como PWA), esconde banner para sempre
+if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
+  document.addEventListener('DOMContentLoaded', function() {
+    var banner = document.getElementById('installBanner');
+    if (banner) banner.style.display = 'none';
+  });
+}
+
+// Check if banner was already dismissed
+try {
+  if (localStorage.getItem('mb_banner_dismissed') === '1') {
+    document.addEventListener('DOMContentLoaded', function() {
+      var banner = document.getElementById('installBanner');
+      if (banner) banner.style.display = 'none';
+    });
+  }
+} catch(e){}
+
 window.addEventListener('beforeinstallprompt', function(e) {
   e.preventDefault();
   deferredPrompt = e;
@@ -1323,8 +1341,9 @@ function installApp() {
 
 function dismissInstall() {
   var banner = document.getElementById('installBanner');
-  if (banner) banner.classList.remove('show');
+  if (banner) banner.style.display = 'none';
   deferredPrompt = null;
+  try { localStorage.setItem('mb_banner_dismissed', '1'); } catch(e){}
 }
 
 window.addEventListener('appinstalled', function() {
